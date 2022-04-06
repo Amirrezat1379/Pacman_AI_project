@@ -86,8 +86,49 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    "*** YOUR CODE HERE ***"    
+    from util import Stack
+
+    stack = Stack()
+
+    visitedStates = []
+    path = []
+
+    # check if player is in goal state at first or not
+    if problem.isGoalState(problem.getStartState()):
+        return []
+    else:
+        stack.push((problem.getStartState(),[]))
+
+        def givFinalDFS():
+
+            # check that we have any state to go
+            if stack.isEmpty():
+                return []
+            else:
+                # returns us our current state
+                currentState,path = stack.pop()
+                visitedStates.append(currentState)
+
+                # Check that if there is goal or not
+                if problem.isGoalState(currentState):
+                    return path
+                else:
+                    successor = problem.getSuccessors(currentState)
+
+                    # new states will add here
+                    if successor:
+                        for item in successor:
+                            i = 0
+                            for visitedItem in visitedStates:
+                                if (item[0] == visitedItem):
+                                    i = 1
+                            if (i == 1):
+                                continue
+                            newPath = path + [item[1]]
+                            stack.push((item[0],newPath))
+            return givFinalDFS()
+        return givFinalDFS()
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
