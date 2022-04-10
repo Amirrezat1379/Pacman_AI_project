@@ -295,14 +295,18 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return (self.startingPosition, [0, 0, 0, 0])
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        for item in state[1]:
+            if item == 0:
+                return False
+        # returns true if all corners have visited
+        return True
 
     def getSuccessors(self, state):
         """
@@ -325,6 +329,24 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            currentx,currenty = state[0]
+            corner = state[1][:]
+
+            directionx, directiony = Actions.directionToVector(action)
+            nextx, nexty = int(currentx + directionx), int(currenty + directiony)
+
+            # select movement
+            if not self.walls[nextx][nexty]:
+
+                # Check if we have reached a corner
+                for oneCorner in self.corners:
+                    if ((nextx,nexty) == oneCorner):
+                        corner[self.corners.index((nextx,nexty))] = 1 # visited corner
+
+                nextState = ((nextx, nexty),corner) # set new state
+                cost = 1
+
+                successors.append((nextState,action,cost))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -360,7 +382,14 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    distance = 0
+    i = 0
+    # manhattan distance
+    for corner in corners:
+        if not state[1][i] and (util.manhattanDistance(state[0],corner) > distance):
+            distance = util.manhattanDistance(state[0],corner)
+        i += 1
+    return distance # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
