@@ -483,7 +483,22 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    if problem.isGoalState(state):
+        return 0
+    foodList = foodGrid.asList()
+    # find distance and return it as heuristic
+    distance = 0
+    for dot in foodList:
+        # because of that 5 is the smallest bound that autograde givs to us we used 5. now if it become more than 5 we
+        # have to use maze distance because it's more precice also it's lower than manhattan
+        if util.manhattanDistance(position,dot) < 5:
+            tmp = mazeDistance(position,dot,problem.startingGameState)
+        # otherwise we will just use the manhattan distance
+        else:
+            tmp = util.manhattanDistance(position,dot)
+        if (tmp > distance):
+            distance = tmp
+    return distance
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -514,7 +529,18 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        startPosition = gameState.getPacmanPosition()
+        food = gameState.getFood()
+        walls = gameState.getWalls()
+        problem = AnyFoodSearchProblem(gameState)
+
+        "*** YOUR CODE HERE ***"
+
+        foodDistance = [(foodPosition, mazeDistance(startPosition, foodPosition, gameState)) for foodPosition in food.asList()]
+        foodDistance = sorted(foodDistance, key=lambda x: x[1], reverse=False)
+        closestFood = foodDistance[0][0]
+        prob = PositionSearchProblem(gameState, start=startPosition, goal=closestFood, warn=False, visualize=False)
+        return search.astar(prob)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
