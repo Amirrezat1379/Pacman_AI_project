@@ -217,29 +217,13 @@ class MinimaxAgent(MultiAgentSearchAgent):
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     Your minimax agent with alpha-beta pruning (question 3)
-    """
+    """   
 
     def getAction(self, gameState):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
-
-class ExpectimaxAgent(MultiAgentSearchAgent):
-    """
-      Your expectimax agent (question 4)
-    """
-
-    def getAction(self, gameState):
-        """
-        Returns the expectimax action using self.depth and self.evaluationFunction
-
-        All ghosts should be modeled as choosing uniformly at random from their
-        legal moves.
-        """
-        "*** YOUR CODE HERE ***"
+        "*** YOUR CODE HERE ***" 
         def maxValue(depth, currentState, alfa, beta):
             pacmanLegalActions = currentState.getLegalActions(0)
             if (depth > self.depth) or currentState.isWin() or currentState.isLose():
@@ -287,6 +271,61 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 bestAction = pacmanAction
             if bestValue > beta : return bestAction
             alfa = max(alfa, bestValue) 
+        return bestAction
+
+
+class ExpectimaxAgent(MultiAgentSearchAgent):
+    """
+    Your expectimax agent (question 4)
+    """
+
+    def getAction(self, gameState):
+        """
+        Returns the expectimax action using self.depth and self.evaluationFunction
+        All ghosts should be modeled as choosing uniformly at random from their
+        legal moves.
+        """
+        "*** YOUR CODE HERE ***"
+
+        def maxValue(depth, currentState):
+            pacmanLegalActions = currentState.getLegalActions(0)
+            if (depth > self.depth) or currentState.isWin() or currentState.isLose():
+                return self.evaluationFunction(currentState)
+
+            muximumValue = -1e10
+
+            for pacmanAction in pacmanLegalActions:
+                pacmanSuccessor = currentState.generateSuccessor(0, pacmanAction)
+                muximumValue = max(muximumValue, chanceValue(depth, pacmanSuccessor, 1))
+            return muximumValue
+
+        def chanceValue(depth,currentState,agentIndex):
+            gostLegalActions = currentState.getLegalActions(agentIndex)
+            if currentState.isWin() or currentState.isLose():
+                return self.evaluationFunction(currentState)
+            
+            gostChanceValue = 0
+            agentCount = currentState.getNumAgents()
+            if agentIndex <= agentCount - 2:
+                for action in gostLegalActions:
+                    gostSuccessor = currentState.generateSuccessor(agentIndex,action)
+                    gostChanceValue += chanceValue(depth, gostSuccessor, agentIndex + 1)
+                    
+            else:
+                for action in gostLegalActions:
+                    gostSuccessor = currentState.generateSuccessor(agentIndex,action)
+                    gostChanceValue += maxValue(depth + 1, gostSuccessor) / len(gostLegalActions)
+            
+            return gostChanceValue
+
+        bestValue = -1e10
+        bestAction = None
+        for pacmanAction in gameState.getLegalActions(0):
+            pacmanSuccessorState = gameState.generateSuccessor(0, pacmanAction)
+            gostValue = chanceValue(1, pacmanSuccessorState, 1)
+            if gostValue > bestValue:
+                bestValue = gostValue
+                bestAction = pacmanAction
         return bestAction
 
 
