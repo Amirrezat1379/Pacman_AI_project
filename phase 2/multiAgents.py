@@ -240,7 +240,54 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def maxValue(depth, currentState, alfa, beta):
+            pacmanLegalActions = currentState.getLegalActions(0)
+            if (depth > self.depth) or currentState.isWin() or currentState.isLose():
+                return self.evaluationFunction(currentState)
+            
+            maximumValue = -1e10
+            for pacmanAction in pacmanLegalActions:
+                pacmanSuccessor = currentState.generateSuccessor(0,pacmanAction)
+                maximumValue = max(maximumValue, minValue(depth, pacmanSuccessor, 1, alfa, beta))
+                if maximumValue > beta : return maximumValue
+                alfa = max(alfa, maximumValue)
+            return maximumValue
+
+        def minValue(depth, currentState, agentIndex, alfa, beta):
+            gostLegalActions = currentState.getLegalActions(agentIndex)
+            if currentState.isWin() or currentState.isLose():
+                return self.evaluationFunction(currentState)
+            
+            minimumValue = 1e10
+            agentCount = currentState.getNumAgents()
+            if agentIndex <= agentCount-2:
+                for gostAction in gostLegalActions:
+                    gostSuccessor = currentState.generateSuccessor(agentIndex,gostAction)
+                    minimumValue = min(minimumValue, minValue(depth, gostSuccessor ,agentIndex + 1, alfa, beta))
+                    if minimumValue < alfa : return minimumValue
+                    beta = min(beta, minimumValue)
+            else:
+                for gostAction in gostLegalActions:
+                    gostSuccessor = currentState.generateSuccessor(agentIndex,gostAction)
+                    minimumValue = min(minimumValue, maxValue(depth + 1, gostSuccessor, alfa, beta))
+                    if minimumValue < alfa : return minimumValue
+                    beta = min(beta, minimumValue)
+            
+            return minimumValue
+
+        bestValue = -1e10
+        bestAction = None
+        alfa = -1e10
+        beta = 1e10
+        for pacmanAction in gameState.getLegalActions(0):
+            successorState = gameState.generateSuccessor(0, pacmanAction)
+            gostValue = minValue(1, successorState, 1, alfa, beta)
+            if gostValue > bestValue:
+                bestValue = gostValue
+                bestAction = pacmanAction
+            if bestValue > beta : return bestAction
+            alfa = max(alfa, bestValue) 
+        return bestAction
 
 
 def betterEvaluationFunction(currentGameState):
