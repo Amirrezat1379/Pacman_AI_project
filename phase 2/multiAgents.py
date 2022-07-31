@@ -172,7 +172,46 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def maxValue(depth, currentState):
+            pacmanLegalActions = currentState.getLegalActions(0)
+            if (depth > self.depth) or currentState.isWin() or currentState.isLose():
+                return self.evaluationFunction(currentState)
+
+            muximumValue = -1e10
+
+            for pacmanAction in pacmanLegalActions:
+                pacmanSuccessor = currentState.generateSuccessor(0, pacmanAction)
+                muximumValue = max(muximumValue, minValue(depth, pacmanSuccessor, 1))
+            return muximumValue
+
+        def minValue(depth, currentState, gostIndex):
+            gostLegalActions = currentState.getLegalActions(gostIndex)
+            if currentState.isWin() or currentState.isLose():
+                return self.evaluationFunction(currentState)
+
+            minimumValue = 1e10
+
+            agentCount = currentState.getNumAgents()
+            if gostIndex <= agentCount - 2:
+                for gostAction in gostLegalActions:
+                    gostSuccessor = currentState.generateSuccessor(gostIndex, gostAction)
+                    minimumValue = min(minimumValue, minValue(depth, gostSuccessor, gostIndex + 1))
+            else:
+                for gostAction in gostLegalActions:
+                    gostSuccessor = currentState.generateSuccessor(gostIndex, gostAction)
+                    minimumValue = min(minimumValue, maxValue(depth + 1, gostSuccessor))
+
+            return minimumValue
+
+        bestValue = -1e10
+        bestAction = None
+        for pacmanAction in gameState.getLegalActions(0):
+            pacmanSuccessorState = gameState.generateSuccessor(0, pacmanAction)
+            gostValue = minValue(1, pacmanSuccessorState, 1)
+            if gostValue > bestValue:
+                bestValue = gostValue
+                bestAction = pacmanAction
+        return bestAction
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
